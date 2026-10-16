@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AV1UD3 · Detectives de riesgos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16202c; --paper:#eef1f4; --card:#ffffff; --line:#cfd6de;
+  --muted:#5b6672; --safe:#0f7a4a; --stop:#b3262e; --warn:#ffc20e; --blue:#2a5bd7;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Barlow,system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:17px;line-height:1.55}
+h1,h2,h3{font-family:"Barlow Condensed",sans-serif;font-weight:700;line-height:1.1;margin:0 0 .4em;letter-spacing:.01em}
+p{margin:.4em 0 .8em}
+a{color:var(--blue)}
+.muted{color:var(--muted)}
+.hazard{height:12px;background:repeating-linear-gradient(-45deg,var(--warn) 0 14px,var(--ink) 14px 28px)}
+header.top{background:var(--ink);color:#fff;padding:22px clamp(16px,4vw,40px) 18px}
+header.top h1{font-size:2.4rem;margin:0}
+header.top .sub{color:#b8c3cf;margin:2px 0 0}
+.ident{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.ident label{display:flex;flex-direction:column;font-size:.85rem;color:#b8c3cf;gap:4px;flex:1;min-width:200px}
+.ident input{font:inherit;font-size:1rem;padding:8px 10px;border-radius:4px;border:0;color:var(--ink)}
+.layout{display:grid;grid-template-columns:270px 1fr;min-height:70vh}
+nav{background:var(--card);border-right:1px solid var(--line);padding:12px 0}
+nav a{display:block;color:var(--ink);text-decoration:none;padding:9px 20px;border-left:4px solid transparent}
+nav a[aria-current]{border-left-color:var(--warn);background:#fff7d6;font-weight:600}
+nav a:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
+nav .n{font-family:"Barlow Condensed",sans-serif;font-weight:800;color:var(--muted);display:inline-block;width:2.2em}
+nav small{display:block;color:var(--muted);font-size:.85rem;margin-left:2.2em}
+main{padding:28px clamp(16px,4vw,48px);max-width:960px;width:100%}
+.sesion-head{border-bottom:3px solid var(--ink);padding-bottom:12px;margin-bottom:20px}
+.sesion-head .fecha{font-weight:600;color:var(--muted)}
+.sesion-head h2{font-size:2.5rem;margin-top:4px}
+.bloque{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px 20px;margin:0 0 18px}
+.bloque h3{font-size:1.4rem}
+.activity{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--ink);border-radius:6px;padding:18px 20px;margin:0 0 18px}
+.activity.quiz{border-left-color:var(--blue)}
+.activity.clasificar{border-left-color:#8a5a00}
+.activity.abierta{border-left-color:var(--safe)}
+.activity.checklist{border-left-color:#5b3fa6}
+.activity.ficha{border-left-color:var(--muted)}
+.activity h3{font-size:1.5rem}
+.pregunta{padding:10px 0;border-top:1px dashed var(--line)}
+.pregunta:first-of-type{border-top:0}
+.pregunta label{display:block;padding:3px 0;cursor:pointer}
+.item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:9px 0;border-top:1px dashed var(--line)}
+.item select{font:inherit;padding:6px 8px;border:1px solid #9aa5b1;border-radius:4px;background:#fff;min-width:230px}
+.campo{display:block;margin:12px 0}
+.campo strong{display:block;margin-bottom:6px}
+textarea{width:100%;min-height:86px;font:inherit;padding:10px;border:1px solid #9aa5b1;border-radius:4px;resize:vertical}
+.lista-check{list-style:none;padding:0;margin:0}
+.lista-check li{padding:6px 0;border-top:1px dashed var(--line)}
+.lista-check label{cursor:pointer}
+.btn{font:inherit;font-weight:600;padding:9px 16px;border-radius:4px;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--ink);color:#fff}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.acciones{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.resultado{font-family:"Barlow Condensed",sans-serif;font-size:1.8rem;font-weight:800;margin-right:6px}
+.ok{color:var(--safe);font-weight:600}
+.ko{color:var(--stop);font-weight:600}
+.video{aspect-ratio:16/9;width:100%;border:0;border-radius:4px;display:block}
+.cadena{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:1.15rem}
+.cadena span{background:var(--ink);color:#fff;padding:4px 10px;border-radius:3px}
+.cadena b{color:#8a5a00}
+table.ficha{width:100%;border-collapse:collapse;margin:8px 0;font-size:.95rem}
+table.ficha th,table.ficha td{border:1px solid #8c97a4;padding:8px;vertical-align:top;text-align:left}
+table.ficha th{background:#e4e9ef}
+table.ficha td.vacio{height:44px}
+.aviso{background:#fff7d6;border:1px solid var(--warn);padding:10px 12px;border-radius:4px}
+.informe{background:#f3f6f9;border:1px solid var(--line);padding:12px;border-radius:4px;white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;margin:12px 0 0}
+.print-head{display:none}
+.print-copy{display:none;white-space:pre-wrap;border:1px solid #999;padding:8px;margin:6px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:4px;transition:transform .25s;z-index:10;max-width:90vw}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.copias{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.copias .btn{border-color:#fff;background:transparent;color:#fff}
+.copias .btn:hover{background:#fff;color:var(--ink)}
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr}
+  nav{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:0}
+  nav a{flex:0 0 auto;padding:10px 14px;border-left:0;border-bottom:4px solid transparent}
+  nav a[aria-current]{border-bottom-color:var(--warn);border-left:0}
+  nav small{display:none}
+  nav .n{width:auto;margin-right:6px}
+  .item{grid-template-columns:1fr}
+  .item select{min-width:0;width:100%}
+}
+@media print{
+  body{background:#fff}
+  body[data-print] .top,
+  body[data-print] nav,
+  body[data-print] .noprint,
+  body[data-print] .bloque,
+  body[data-print] .sesion-head,
+  body[data-print] .activity:not(.is-printing){display:none!important}
+  body[data-print] .layout{display:block}
+  body[data-print] main{padding:0;max-width:none}
+  body[data-print] .activity{border:0;box-shadow:none;padding:0;margin:0}
+  body[data-print] .activity.is-printing .print-head{display:block;font-size:.9rem;border-bottom:1px solid #999;margin-bottom:10px;padding-bottom:4px}
+  body[data-print] textarea{display:none!important}
+  body[data-print] .print-copy{display:block}
+  body[data-print] .lista-check li label:before{content:"☐  "}
+  body[data-print] .toast{display:none}
+  body[data-print] .pregunta{break-inside:avoid}
+  body[data-print] table.ficha td{height:auto}
+  body[data-print] table.ficha td.vacio{height:38px}
+  body[data-print] .activity.is-printing .print-head + *{margin-top:6px}
+}
+</style>
+</head>
+<body>
+
+<div class="hazard" aria-hidden="true"></div>
+<header class="top">
+  <h1>AV1UD3 · Detectives de riesgos</h1>
+  <p class="sub">Diseñamos un entorno de trabajo seguro · RA2b y RA2c · 9 sesiones</p>
+  <div class="ident">
+    <label>Nombre y apellidos
+      <input id="nombre" data-id-campo="nombre" autocomplete="name" placeholder="Ej.: Ana García López">
+    </label>
+    <label>Código de grupo
+      <input id="grupo" data-id-campo="grupo" placeholder="Ej.: 2DAM-B">
+    </label>
+  </div>
+  <div class="copias">
+    <button class="btn" type="button" id="btn-exportar">Exportar copia</button>
+    <button class="btn" type="button" id="btn-importar">Importar copia</button>
+    <input type="file" id="archivo-importar" accept="application/json,.json" hidden>
+    <span class="muted" style="color:#b8c3cf">Guarda tu progreso en un archivo o recupéralo en otro equipo.</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav id="nav" aria-label="Sesiones"></nav>
+  <main id="main"></main>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   CONFIGURACIÓN (editar aquí)
+   EMAIL_DESTINO: dirección que recibe los informes.
+   VIDEOS: en cada sesión, sustituir id:"" por el ID del vídeo
+   de YouTube (la parte después de ?v=).
+   ========================================================= */
+const CONFIG = {
+  EMAIL_DESTINO: "",
+  FORMULARIO: "https://forms.gle/tZCxXRWcwtciPjW16"
+};
+
+const KEY = "av1ud3-detectives-v1";
+let st = Object.assign({nombre:"", grupo:"", res:{}, resp:{}, checks:{}}, JSON.parse(localStorage.getItem(KEY) || "{}"));
+let vista = "s1";
+const guardar = () => localStorage.setItem(KEY, JSON.stringify(st));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => n.toFixed(1).replace(".", ",");
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+const SESIONES = [
+{
+  n:1, corto:"Lanzamiento", fecha:"Viernes 16 de octubre",
+  titulo:"Lanzamiento: aprendemos a mirar el trabajo",
+  objetivo:"Distinguir factor de riesgo, riesgo y daño, y clasificar situaciones de trabajo en las cuatro familias del portfolio.",
+  antes:`<p>Es la primera sesión: no hay preparación previa. Antes de empezar, responde el cuestionario inicial.</p>
+         <p><a class="btn primary" href="${CONFIG.FORMULARIO}" target="_blank" rel="noopener">Abrir cuestionario inicial</a></p>`,
+  videos:[
+    {titulo:"Vídeo introductorio", id:"NganlSN4ic4", busqueda:""},
+    {titulo:"Vídeo de la primera actividad", id:"NgL3_zPtl3w", busqueda:""}
+  ],
+  tiempos:"Pregunta inicial 5 min · Vídeo y anotaciones 7 · Explicación dialogada 10 · Clasificación de tarjetas 15 · Portfolio 13 · Ticket de salida 5.",
+  actividades:[
+    {id:"s1a", tipo:"abierta", titulo:"Tras el vídeo: tres situaciones que podrían causar daño",
+     enunciado:"Anota tres situaciones. Para cada una, explica qué condición resulta peligrosa, qué podría ocurrir y cómo intentarías evitarlo.",
+     preguntas:["Situación 1", "Situación 2", "Situación 3"]},
+    {id:"s1b", tipo:"clasificar", titulo:"Clasificamos situaciones de trabajo",
+     enunciado:"Asigna cada situación a una de las cuatro familias del portfolio.",
+     opciones:["Condiciones de seguridad","Factores medioambientales","Factores ergonómicos","Factores psicosociales"],
+     items:[
+       {t:"Cable atravesado en una zona de paso", a:0},
+       {t:"Ruido constante del compresor durante toda la jornada", a:1},
+       {t:"Levantar sacos de 25 kg repetidamente sin ayuda", a:2},
+       {t:"Presión de plazos y falta de apoyo del equipo", a:3},
+       {t:"Vapores de disolvente en un taller mal ventilado", a:1},
+       {t:"Extintor bloqueado por cajas apiladas", a:0}
+     ]},
+    {id:"s1q", tipo:"quiz", titulo:"Comprobación: conceptos básicos",
+     enunciado:"Elige una respuesta por pregunta y pulsa «Corregir».",
+     preguntas:[
+       {q:"¿Qué es un factor de riesgo?", ops:["El daño que sufre la persona trabajadora","Una condición de trabajo que puede causar un daño","La medida preventiva que se aplica","La sanción por incumplir la norma"], a:1},
+       {q:"En la cadena de prevención, ¿qué es el daño?", ops:["La condición de trabajo","La probabilidad de que ocurra","La consecuencia para la salud de la persona","El plan de emergencia"], a:2},
+       {q:"Una herramienta olvidada en una zona de paso es principalmente un factor de…", ops:["Riesgo ergonómico","Riesgo de seguridad","Riesgo psicosocial","Ningún riesgo"], a:1},
+       {q:"La iluminación insuficiente de un taller pertenece a…", ops:["Condiciones de seguridad","Factores medioambientales (agentes físicos)","Factores ergonómicos","Factores psicosociales"], a:1},
+       {q:"¿Por qué el portfolio es individual aunque se trabaje en parejas?", ops:["Para que cada estudiante tenga su material y el docente compruebe su aprendizaje","Para evitar trabajar en equipo","Porque la pareja decide qué entregar","Porque no hay evaluación"], a:0}
+     ]},
+    {id:"s1f", tipo:"ficha", titulo:"Ficha 1 · Portada y plantilla de síntesis del portfolio",
+     html:`<table class="ficha"><tr><th style="width:35%">Nombre y apellidos</th><td class="vacio"></td></tr>
+           <tr><th>Grupo</th><td class="vacio"></td></tr><tr><th>Código de grupo</th><td class="vacio"></td></tr>
+           <tr><th>Fecha</th><td class="vacio"></td></tr></table>
+           <p><strong>Plantilla de síntesis</strong> (una fila por factor o agente)</p>
+           <table class="ficha"><tr><th>Factor o agente</th><th>Concepto</th><th>Cuándo aparece</th><th>Riesgo y daños más comunes</th><th>Medidas de prevención y protección</th><th>Ejemplo</th></tr>
+           <tr><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td></tr>
+           <tr><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td></tr></table>`},
+    {id:"s1t", tipo:"abierta", titulo:"Ticket de salida",
+     enunciado:"Antes de salir, escribe una cadena completa para un caso de tu entorno.",
+     preguntas:["Situación → factor de riesgo → riesgo → posible daño → medida preventiva"]}
+  ]
+},
+{
+  n:2, corto:"Seguridad", fecha:"Miércoles 21 de octubre",
+  titulo:"Seguridad: inspeccionamos un centro de trabajo",
+  objetivo:"Localizar incidencias de espacios, señalización, incendio y electricidad, y justificar su prioridad.",
+  antes:`<p>Recurso breve sobre espacios de trabajo, señalización, incendio y electricidad. Mira el vídeo y responde mentalmente: ¿qué hace que un pasillo sea seguro?</p>`,
+  videos:[{titulo:"Recurso previo: señalización, incendio y electricidad", id:"", busqueda:"señalización seguridad incendio riesgo eléctrico prevención laboral"}],
+  tiempos:"Activación 5 · Aclaración 8 · Reto en parejas 22 · Portfolio 15 · Ticket de salida 5 (55 min).",
+  actividades:[
+    {id:"s2c", tipo:"clasificar", titulo:"Reto: «Inspección de seguridad»",
+     enunciado:"Cada incidencia pertenece a un bloque de la inspección. Asígnala y corrige.",
+     opciones:["Espacios e instalaciones","Señalización de seguridad","Riesgo de incendio","Riesgo eléctrico"],
+     items:[
+       {t:"Caja de cartón obstruyendo la salida de emergencia", a:0},
+       {t:"Señal de salida tapada por un estante", a:1},
+       {t:"Regleta sobrecargada con varios aparatos en cascada", a:3},
+       {t:"Extintor sin revisión vigente y sin señalizar", a:2},
+       {t:"Cable pelado a la vista de un equipo deteriorado", a:3},
+       {t:"Suelo mojado sin señalizar junto al fregadero del office", a:0}
+     ]},
+    {id:"s2a", tipo:"abierta", titulo:"Priorización y justificación",
+     enunciado:"Elige tres incidencias del reto. Esta parte la completas tú y la pegas en el portfolio.",
+     preguntas:["Para cada una: qué podría ocurrir y qué medida propones.", "Ordénalas por prioridad y justifica por qué corregirías primero la primera."]},
+    {id:"s2q", tipo:"quiz", titulo:"Comprobación: seguridad",
+     preguntas:[
+       {q:"Las señales de salvamento o socorro son, en general, de color…", ops:["Rojo","Amarillo","Verde","Azul"], a:2},
+       {q:"Ante un equipo eléctrico deteriorado, lo primero es…", ops:["Tocarlo para comprobar si funciona","Avisar a la persona responsable y no manipularlo","Cubrirlo con cinta y seguir trabajando","Desmontarlo"], a:1},
+       {q:"Un extintor de polvo polivalente (ABC) sirve para fuegos de…", ops:["Clase A, B y C","Solo clase D","Solo equipos eléctricos","Solo líquidos"], a:0},
+       {q:"Las vías de evacuación deben mantenerse…", ops:["Cerradas con llave durante la jornada","Libres de obstáculos","Con mobiliario de reserva","Con cajas cerca de la salida"], a:1},
+       {q:"Una regleta sobrecargada puede provocar…", ops:["Mejor rendimiento de los aparatos","Sobrecalentamiento e incendio","Menos consumo eléctrico","Nada, si está bien conectada"], a:1}
+     ]},
+    {id:"s2f", tipo:"ficha", titulo:"Ficha 2 · Hoja de inspección de seguridad",
+     html:`<table class="ficha"><tr><th>Zona</th><th>Situación observada</th><th>¿Corregida? (Sí / No)</th><th>Medida propuesta</th></tr>
+           ${"<tr><td class=\"vacio\"></td><td class=\"vacio\"></td><td class=\"vacio\"></td><td class=\"vacio\"></td></tr>".repeat(6)}</table>`},
+    {id:"s2t", tipo:"abierta", titulo:"Ticket de salida",
+     enunciado:"Una incidencia de hoy que cambiarías primero y por qué.", preguntas:["Tu respuesta"]}
+  ]
+},
+{
+  n:3, corto:"Agentes físicos", fecha:"Viernes 23 de octubre",
+  titulo:"Agentes físicos: analizamos el ambiente de trabajo",
+  objetivo:"Identificar ruido, vibraciones, radiaciones, temperatura e iluminación, y describir la exposición y una mejora.",
+  antes:`<p>Ficha o microvídeo con un ejemplo de cada agente y tres preguntas de comprobación. Lo que no mides, no lo afirmes: anota qué dato te falta.</p>`,
+  videos:[{titulo:"Microvídeo: agentes físicos", id:"", busqueda:"agentes físicos ruido vibraciones radiaciones iluminación temperatura prevención laboral"}],
+  tiempos:"Activación 5 · Aclaración 8 · Cinco estaciones 22 · Portfolio 15 · Ticket de salida 5 (55 min).",
+  actividades:[
+    {id:"s3c", tipo:"clasificar", titulo:"Reto: «Cinco ambientes, cinco problemas»",
+     enunciado:"Identifica el agente físico de cada estación.",
+     opciones:["Ruido","Vibraciones","Radiaciones","Temperatura","Iluminación"],
+     items:[
+       {t:"Taladro neumático en un taller: hay que gritar para hablar", a:0},
+       {t:"Operario con herramienta portátil que nota hormigueo en las manos tras horas", a:1},
+       {t:"Soldadura sin pantalla protectora, con exposición al arco", a:2},
+       {t:"Almacén frigorífico sin ropa adecuada", a:3},
+       {t:"Pantalla con reflejos y pasillo en penumbra", a:4}
+     ]},
+    {id:"s3q", tipo:"quiz", titulo:"Comprobación: agentes físicos",
+     preguntas:[
+       {q:"El hormigueo tras usar una herramienta portátil durante horas se relaciona con…", ops:["Ruido","Vibraciones","Radiaciones","Iluminación"], a:1},
+       {q:"Para saber si se superan los límites de exposición al ruido, lo adecuado es…", ops:["Fiarse de la impresión de la persona trabajadora","Realizar una medición técnica","Mirar una fotografía del puesto","Preguntar al compañero de al lado"], a:1},
+       {q:"Las radiaciones ópticas de una soldadura pueden afectar a…", ops:["La vista y la piel","El oído","Solo los pulmones","Ningún órgano"], a:0},
+       {q:"Una iluminación deficiente puede provocar…", ops:["Fatiga visual y errores","Mejor concentración","Ningún efecto","Mayor seguridad sin cambios"], a:0}
+     ]},
+    {id:"s3a", tipo:"abierta", titulo:"Caso comentado con más detalle",
+     enunciado:"Elige la estación del ruido o la de temperatura.",
+     preguntas:["Describe la exposición y qué información te falta para valorarla.", "Propón una mejora concreta, empezando por la medida en el origen del riesgo."]},
+    {id:"s3f", tipo:"ficha", titulo:"Ficha 3 · Filas de síntesis de agentes físicos",
+     html:`<table class="ficha"><tr><th>Agente</th><th>Exposición (dónde y cuándo)</th><th>Efectos posibles</th><th>Medida en el origen</th><th>Medida colectiva</th><th>Medida individual</th></tr>
+           ${["Ruido","Vibraciones","Radiaciones","Temperatura","Iluminación"].map(x=>`<tr><td><strong>${x}</strong></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td></tr>`).join("")}</table>`},
+    {id:"s3t", tipo:"abierta", titulo:"Ticket de salida",
+     enunciado:"Un agente físico que hayas notado en tu entorno y cómo lo reducirías.", preguntas:["Tu respuesta"]}
+  ]
+},
+{
+  n:4, corto:"Químicos y biológicos", fecha:"Miércoles 28 de octubre",
+  titulo:"Químicos y biológicos: lo que no siempre vemos",
+  objetivo:"Reconocer agentes químicos y biológicos, identificar qué información necesitamos y vincular cada medida al agente.",
+  antes:`<p>Lee dos fichas breves: una sobre productos químicos (etiqueta y ficha de datos de seguridad) y otra sobre agentes biológicos.</p>`,
+  videos:[{titulo:"Recurso previo: fichas de datos de seguridad", id:"", busqueda:"ficha de datos de seguridad agentes químicos agentes biológicos prevención laboral"}],
+  tiempos:"Activación 5 · Aclaración 8 · Reto en parejas 22 · Portfolio 15 · Ticket de salida 5 (55 min).",
+  actividades:[
+    {id:"s4c", tipo:"clasificar", titulo:"Reto: ¿qué agente tenemos delante?",
+     enunciado:"Clasifica cada situación. Si el agente no es químico ni biológico, marca la última opción.",
+     opciones:["Agente químico","Agente biológico","Ninguno (agente físico u otro)"],
+     items:[
+       {t:"Resina epoxi y disolventes en el laminado de cascos", a:0},
+       {t:"Moho en una sentina húmeda y cerrada", a:1},
+       {t:"Taladro de percusión en el taller", a:2},
+       {t:"Lejía y desengrasantes en la limpieza de la zona de trabajo", a:0},
+       {t:"Hongos en el tapizado húmedo de un asiento", a:1}
+     ]},
+    {id:"s4q", tipo:"quiz", titulo:"Comprobación: químicos y biológicos",
+     preguntas:[
+       {q:"La ficha de datos de seguridad (FDS) de un producto químico sirve para…", ops:["Decorar la etiqueta","Conocer sus peligros, medidas de protección y primeros auxilios","Calcular el coste del producto","Sustituir al plan de emergencia"], a:1},
+       {q:"Antes de usar un producto químico, lo primero es…", ops:["Usarlo sin protección si huele bien","Consultar su etiqueta y su ficha de datos de seguridad","Mezclarlo con otro para que rinda más","Guardarlo en un envase de alimentos"], a:1},
+       {q:"Un agente biológico es…", ops:["Un microorganismo que puede causar infección u otro daño","Cualquier sustancia líquida","Un ruido de fondo","Un tipo de iluminación"], a:0},
+       {q:"En la jerarquía preventiva, ¿qué medida tiene prioridad?", ops:["El equipo de protección individual","Eliminar o reducir el riesgo en su origen","La formación sin cambios técnicos","La señalización sin más"], a:1},
+       {q:"¿Usar EPI es siempre la primera medida?", ops:["Sí, siempre","No: antes se valora eliminar o reducir el riesgo y proteger colectivamente","Solo en verano","Solo para el personal nuevo"], a:1}
+     ]},
+    {id:"s4a", tipo:"abierta", titulo:"Análisis de un caso",
+     enunciado:"Elige una situación de la clasificación con posible exposición.",
+     preguntas:["Qué información tienes y cuál te falta (etiqueta, ficha, tiempo de exposición, ventilación…).", "Qué medidas propondrías consultar o aplicar, y por qué no basta con recomendar un EPI."]},
+    {id:"s4f", tipo:"ficha", titulo:"Ficha 4 · Fichas de agentes químicos y biológicos",
+     html:`<p><strong>Agente químico</strong></p>
+           <table class="ficha"><tr><th>Producto</th><th>Indicación de la etiqueta</th><th>Vía de exposición</th><th>Medida en el origen</th><th>Medida colectiva</th><th>EPI (con justificación)</th></tr>
+           <tr><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td></tr></table>
+           <p><strong>Agente biológico</strong></p>
+           <table class="ficha"><tr><th>Agente</th><th>Vía de entrada</th><th>Situaciones de exposición</th><th>Medidas preventivas</th></tr>
+           <tr><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td></tr></table>
+           <p><strong>Comparación:</strong></p><div class="vacio" style="border:1px solid #8c97a4;height:70px"></div>`},
+    {id:"s4t", tipo:"abierta", titulo:"Ticket de salida",
+     enunciado:"Qué información necesitas antes de usar un producto químico.", preguntas:["Tu respuesta"]}
+  ]
+},
+{
+  n:5, corto:"Ergonomía física", fecha:"Viernes 30 de octubre",
+  titulo:"Ergonomía física: adaptamos el trabajo a la persona",
+  objetivo:"Distinguir trabajo estático y dinámico, y proponer cambios en el puesto y en la organización de la tarea.",
+  antes:`<p>Recurso breve sobre posturas, esfuerzos y organización de las tareas. Fíjate en qué parte del cuerpo se cansa antes en una tarea que conozcas.</p>`,
+  videos:[{titulo:"Recurso previo: posturas y manipulación de cargas", id:"", busqueda:"manipulación manual de cargas postura trabajo estático prevención laboral"}],
+  tiempos:"Activación 5 · Aclaración 8 · Reto «Rediseña la tarea» 22 · Portfolio 15 · Ticket de salida 5 (55 min).",
+  actividades:[
+    {id:"s5c", tipo:"clasificar", titulo:"Estático, dinámico o manipulación de cargas",
+     enunciado:"Asigna cada tarea a su categoría.",
+     opciones:["Trabajo estático","Trabajo dinámico","Manipulación manual de cargas"],
+     items:[
+       {t:"Mantener una postura de pie inclinada durante 40 minutos", a:0},
+       {t:"Subir y bajar del casco por una escalera de forma repetida", a:1},
+       {t:"Levantar a mano un motor fueraborda de 60 kg", a:2},
+       {t:"Sostener una lijadora con el brazo en alto sin pausa", a:0},
+       {t:"Pasar bidones de 20 litros de un lugar a otro", a:2}
+     ]},
+    {id:"s5q", tipo:"quiz", titulo:"Comprobación: ergonomía",
+     preguntas:[
+       {q:"Adaptar el puesto a la persona consiste en…", ops:["Pedirle que mantenga buena postura","Ajustar altura, alcance y disposición del puesto","Cambiarla de tarea cuando se canse","Reducir las horas de descanso"], a:1},
+       {q:"Antes de levantar una carga, conviene valorar…", ops:["Solo su color","Peso, agarre, ruta y frecuencia","Solo su precio","Nada: se levanta con la espalda recta"], a:1},
+       {q:"Un trabajo estático se caracteriza por…", ops:["Movimientos amplios y repetidos","Mantener una postura o fuerza sostenida sin movimiento apreciable","Estar sentado sin hacer nada","Mover cargas por una rampa"], a:1},
+       {q:"Una medida preferente para reducir la carga física es…", ops:["Pedir más pausas sin cambiar la tarea","Rediseñar la tarea o usar medios auxiliares","Contratar a alguien más alto","Ninguna: el riesgo es inevitable"], a:1}
+     ]},
+    {id:"s5a", tipo:"abierta", titulo:"Reto: «Rediseña la tarea»",
+     enunciado:"Usa una tarea de tu entorno o una tarea simulada.",
+     preguntas:["Describe la tarea y la postura o esfuerzo habitual.", "Propón cambios en altura, alcances, organización o medios de ayuda.", "Comparación antes / después: qué mejora y qué riesgo nuevo podría aparecer."]},
+    {id:"s5f", tipo:"ficha", titulo:"Ficha 5 · Lista de comprobación: manipulación manual de cargas",
+     html:`<table class="ficha"><tr><th style="width:28%">Factor</th><th>Pregunta a responder</th><th style="width:30%">Respuesta</th></tr>
+           ${[["Peso","¿Cuánto pesa la carga?"],["Distancia","¿A qué distancia del cuerpo se sostiene?"],["Altura","¿Desde qué altura se levanta y hasta cuál se deposita?"],["Agarre","¿Tiene asas o es difícil de sujetar?"],["Frecuencia y duración","¿Cuántas veces y durante cuánto tiempo?"],["Espacio y suelo","¿Hay espacio libre y el suelo es estable?"],["Ayudas","¿Hay carretilla, transpaleta o un compañero?"]].map(([f,p])=>`<tr><td><strong>${f}</strong></td><td>${p}</td><td class="vacio"></td></tr>`).join("")}</table>`},
+    {id:"s5t", tipo:"abierta", titulo:"Ticket de salida",
+     enunciado:"Una postura o esfuerzo que hayas adaptado hoy y el cambio que propones.", preguntas:["Tu respuesta"]}
+  ]
+},
+{
+  n:6, corto:"Pantallas y carga mental", fecha:"Miércoles 4 de noviembre",
+  titulo:"Pantallas y carga mental: revisamos nuestro puesto",
+  objetivo:"Auditar un puesto administrativo con pantalla y relacionar la carga mental con la organización del trabajo.",
+  antes:`<p>Ficha sobre trabajo con pantallas y un caso de tareas simultáneas e interrupciones.</p>`,
+  videos:[{titulo:"Recurso previo: trabajo con pantallas", id:"", busqueda:"pantallas de visualización de datos ergonomía puesto administrativo prevención"}],
+  tiempos:"Activación 5 · Aclaración 8 · Auditoría del puesto 22 · Portfolio 15 · Ticket de salida 5 (55 min).",
+  actividades:[
+    {id:"s6l", tipo:"checklist", titulo:"Reto: «Auditoría de un puesto administrativo»",
+     enunciado:"Revisa el puesto real del aula o uno de una imagen. Marca lo que cumple.",
+     items:[
+       "La pantalla está a la altura de los ojos y a una distancia cómoda",
+       "No hay reflejos ni deslumbramientos sobre la pantalla",
+       "La silla es regulable y da apoyo a la zona lumbar",
+       "Documentos y materiales están al alcance sin giros forzados",
+       "El teclado y el ratón permiten apoyar muñecas y brazos",
+       "Hay espacio suficiente para cambiar de postura",
+       "Las tareas simultáneas y los avisos están organizados",
+       "Se prevén pausas o cambios de actividad"
+     ]},
+    {id:"s6q", tipo:"quiz", titulo:"Comprobación: pantallas y carga mental",
+     preguntas:[
+       {q:"Las pantallas de visualización deben…", ops:["Estar en penumbra total","Evitar reflejos y permitir ajustar la inclinación","Colocarse siempre a contraluz","No tener ajuste de brillo"], a:1},
+       {q:"La carga mental aparece cuando…", ops:["La tarea es física","Las demandas superan los recursos disponibles para gestionarlas","Se trabaja sentado","Se usa un ordenador"], a:1},
+       {q:"Frente a interrupciones constantes, una medida organizativa adecuada es…", ops:["Atender todo a la vez","Planificar bloques de tareas y canalizar los avisos","Eliminar las pausas","Trabajar sin ordenar prioridades"], a:1}
+     ]},
+    {id:"s6a", tipo:"abierta", titulo:"Acumulación de avisos y plazos",
+     enunciado:"Caso: una persona recibe a la vez avisos, plazos e interrupciones constantes.",
+     preguntas:["Qué efectos puede tener sobre la carga mental.", "Propón tres mejoras organizativas o de puesto y justifica cada una."]},
+    {id:"s6f", tipo:"ficha", titulo:"Ficha 6 · Carga mental: resumen del caso",
+     html:`<table class="ficha"><tr><th>Demandas de la tarea</th><th>Recursos disponibles</th><th>Efectos posibles</th><th>Mejora organizativa</th></tr>
+           <tr><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td></tr>
+           <tr><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td><td class="vacio"></td></tr></table>`},
+    {id:"s6t", tipo:"abierta", titulo:"Ticket de salida",
+     enunciado:"Un aviso o interrupción que afecte a tu carga mental y una mejora organizativa.", preguntas:["Tu respuesta"]}
+  ]
+},
+{
+  n:7, corto:"Riesgos psicosociales", fecha:"Viernes 6 de noviembre",
+  titulo:"Riesgos psicosociales: analizamos cómo se organiza el trabajo",
+  objetivo:"Identificar condiciones organizativas y relacionales problemáticas, y distinguirlas de sus posibles efectos.",
+  antes:`<p>Recurso breve y tres situaciones para identificar dudas. Piensa: ¿qué diferencia hay entre una condición de trabajo y un efecto sobre la salud?</p>`,
+  videos:[{titulo:"Recurso previo: organización del trabajo y riesgos psicosociales", id:"", busqueda:"riesgos psicosociales organización del trabajo prevención laboral"}],
+  tiempos:"Activación 5 · Aclaración 8 · Reto «No todo se resuelve con una actitud positiva» 22 · Portfolio 15 · Ticket de salida 5 (55 min).",
+  actividades:[
+    {id:"s7c", tipo:"clasificar", titulo:"Factor o efecto",
+     enunciado:"Distingue las condiciones de trabajo de sus posibles efectos.",
+     opciones:["Factor de organización","Factor de relaciones o conductas","Posible efecto sobre la salud"],
+     items:[
+       {t:"Sobrecarga continuada de trabajo", a:0},
+       {t:"Falta de apoyo de la jefatura ante las dudas", a:1},
+       {t:"Burnout o desgaste profesional", a:2},
+       {t:"Hostigamiento reiterado de un compañero", a:1},
+       {t:"Insatisfacción laboral mantenida", a:2}
+     ]},
+    {id:"s7q", tipo:"quiz", titulo:"Comprobación: psicosociales",
+     preguntas:[
+       {q:"Las condiciones organizativas deficientes pueden…", ops:["No tener ningún efecto","Afectar a la salud de las personas trabajadoras","Mejorar siempre el rendimiento","Afectar solo a la economía"], a:1},
+       {q:"Diagnosticar burnout o calificar jurídicamente un acoso corresponde…", ops:["Al alumnado en un ejercicio","A profesionales competentes","A cualquier compañero","Al sistema de puntuación"], a:1},
+       {q:"La prevención de riesgos psicosociales debe centrarse…", ops:["Solo en la actitud de la persona","En la organización del trabajo y las relaciones, no solo en la actitud individual","En evitar hablar del tema","En el tiempo de ocio"], a:1}
+     ]},
+    {id:"s7a", tipo:"abierta", titulo:"Caso de sobrecarga y falta de apoyo",
+     enunciado:"Analiza un caso ficticio con sobrecarga continuada y funciones poco claras.",
+     preguntas:["Condiciones organizativas problemáticas y posibles efectos.", "Medidas que debería adoptar la organización.", "Información que falta para comprender el caso."]},
+    {id:"s7f", tipo:"ficha", titulo:"Ficha 7 · Cuadro de factores psicosociales",
+     html:`<table class="ficha"><tr><th>Factor</th><th>Condición observada</th><th>Posibles efectos</th><th>Medida organizativa</th></tr>
+           ${"<tr><td class=\"vacio\"></td><td class=\"vacio\"></td><td class=\"vacio\"></td><td class=\"vacio\"></td></tr>".repeat(4)}</table>`},
+    {id:"s7t", tipo:"abierta", titulo:"Ticket de salida",
+     enunciado:"Diferencia en una frase factor de riesgo y posible efecto, con un ejemplo.", preguntas:["Tu respuesta"]}
+  ]
+},
+{
+  n:8, corto:"Integramos", fecha:"Miércoles 11 de noviembre",
+  titulo:"Integramos: del riesgo a la acción preventiva",
+  objetivo:"Identificar peligros, valorar de forma orientativa, proponer medidas y priorizar actuaciones en un caso común.",
+  antes:`<p>Ficha sobre probabilidad, consecuencias y prioridad preventiva. Recuerda: la valoración es un ejercicio didáctico, no una evaluación profesional.</p>`,
+  videos:[{titulo:"Recurso previo: evaluación y prioridad preventiva", id:"", busqueda:"evaluación de riesgos probabilidad consecuencias prioridad preventiva"}],
+  tiempos:"Activación 5 · Aclaración 8 · Reto final «Plan de mejora» 22 · Revisión del portfolio 15 · Ticket de salida 5 (55 min).",
+  actividades:[
+    {id:"s8c", tipo:"clasificar", titulo:"Prioridad orientativa",
+     enunciado:"Relaciona cada caso con la prioridad de actuación.",
+     opciones:["Actuar de inmediato","Planificar a corto plazo","Vigilar y revisar"],
+     items:[
+       {t:"Probabilidad alta y consecuencias graves", a:0},
+       {t:"Probabilidad alta y consecuencias leves", a:1},
+       {t:"Probabilidad baja y consecuencias graves", a:1},
+       {t:"Probabilidad baja y consecuencias leves", a:2}
+     ]},
+    {id:"s8q", tipo:"quiz", titulo:"Comprobación: priorización",
+     preguntas:[
+       {q:"Para priorizar actuaciones, es clave considerar…", ops:["Solo el coste","La probabilidad y las consecuencias","Solo la opinión del responsable","Solo el color de la señal"], a:1},
+       {q:"La valoración de riesgos en el aula es…", ops:["Una evaluación profesional oficial","Un ejercicio didáctico, no una evaluación profesional","Un examen médico","Un trámite sin valor"], a:1},
+       {q:"¿Basta una única matriz para todos los riesgos?", ops:["Sí, siempre","No: los riesgos químicos, biológicos, ergonómicos o psicosociales pueden requerir procedimientos específicos","Sí, si es de colores","Solo para riesgos eléctricos"], a:1}
+     ]},
+    {id:"s8a", tipo:"abierta", titulo:"Reto final: «Plan de mejora de un entorno laboral»",
+     enunciado:"Caso común: una empresa con oficina, archivo y pequeño almacén, con situaciones de las cuatro familias.",
+     preguntas:["Identifica al menos seis situaciones y relaciona factor, riesgo y daño.", "Propón medidas y ordénalas por prioridad.", "Justifica las dos primeras prioridades."]},
+    {id:"s8f", tipo:"ficha", titulo:"Ficha 8 · Tabla de análisis y plan de mejora",
+     html:`<table class="ficha"><tr><th>Situación</th><th>Factor, riesgo y daño</th><th>Medida</th><th>Responsable propuesto</th><th>Plazo orientativo</th><th>Prioridad</th></tr>
+           ${"<tr><td class=\"vacio\"></td><td class=\"vacio\"></td><td class=\"vacio\"></td><td class=\"vacio\"></td><td class=\"vacio\"></td><td class=\"vacio\"></td></tr>".repeat(6)}</table>`},
+    {id:"s8l", tipo:"checklist", titulo:"Revisión del portfolio (lista de cotejo)",
+     enunciado:"Revisa tu portfolio antes de entregarlo.",
+     items:[
+       "Están las cuatro familias y la introducción",
+       "Cada entrada relaciona factor, riesgo y daño",
+       "Cada medida es específica y no se reduce a «usar EPI»",
+       "Las fuentes están citadas",
+       "Incluye evidencias de clase y una corrección tras recibir comentarios",
+       "Tiene reflexión final: «Lo más importante que he aprendido es…»"
+     ]},
+    {id:"s8t", tipo:"abierta", titulo:"Ticket de salida",
+     enunciado:"Qué prioridad darías a la situación más grave que has identificado, y por qué.", preguntas:["Tu respuesta"]}
+  ]
+},
+{
+  n:9, corto:"Demostramos", fecha:"Viernes 13 de noviembre",
+  titulo:"Demostramos lo aprendido",
+  objetivo:"Resolver de forma individual un caso nuevo, explicar dos decisiones preventivas y autoevaluarse.",
+  antes:`<p>Repasa tu portfolio. Sin él no podrás entregar el caso individual.</p>`,
+  videos:[],
+  tiempos:"Entrega y comprobación del portfolio 5 · Caso individual 25 · Explicación de dos decisiones 10 · Autoevaluación y reflexión 10 · Cierre 5 (55 min).",
+  actividades:[
+    {id:"s9a", tipo:"abierta", titulo:"Caso individual nuevo",
+     enunciado:"Caso que entrega el docente. Trabaja de forma individual.",
+     preguntas:["Identifica los factores de riesgo y clasifícalos en las cuatro familias.", "Relaciona factor, riesgo y daño, y estima de forma razonada probabilidad y consecuencias cuando proceda.", "Propón medidas en el origen, colectivas e individuales, y justifica el orden de prioridad."]},
+    {id:"s9b", tipo:"abierta", titulo:"Explicación escrita de dos decisiones preventivas",
+     preguntas:["Decisión preventiva 1: qué has decidido y por qué.", "Decisión preventiva 2: qué has decidido y por qué."]},
+    {id:"s9q", tipo:"quiz", titulo:"Demostración final",
+     preguntas:[
+       {q:"¿Cuál es el orden correcto de la cadena de trabajo?", ops:["Daño → riesgo → factor → medida","Factor → riesgo → daño → medida preventiva","Medida → daño → factor → riesgo","Riesgo → medida → factor → daño"], a:1},
+       {q:"Un cable atravesado en una zona de paso es un factor de…", ops:["Seguridad","Psicosocial","Ergonómico","Biológico"], a:0},
+       {q:"Un puesto con reflejos en la pantalla debe corregirse porque…", ops:["Es un asunto estético","Puede afectar a la vista y a la postura al forzar la atención","No afecta a nada","Solo es una cuestión decorativa"], a:1},
+       {q:"Las medidas preventivas se ordenan, preferentemente, empezando por…", ops:["El EPI","Eliminar o reducir el riesgo en su origen","El coste más alto","La última que llegó"], a:1}
+     ]},
+    {id:"s9l", tipo:"checklist", titulo:"Autoevaluación",
+     items:[
+       "Sé diferenciar factor de riesgo, riesgo y daño",
+       "Sé clasificar un caso en las cuatro familias",
+       "Puedo proponer medidas específicas y justificarlas",
+       "He corregido mi portfolio tras los comentarios",
+       "Puedo explicar al menos dos decisiones preventivas"
+     ]}
+  ]
+}
+];
+
+const COTEJO_RUBRICA = {
+  ponderacion:[
+    ["Portfolio individual","50%","Comprensión, cobertura de contenidos, evidencias y mejora."],
+    ["Caso práctico individual final","30%","Aplicación autónoma a una situación nueva."],
+    ["Retos de aula y explicaciones breves","15%","Razonamiento, justificación y aportaciones al trabajo."],
+    ["Reflexión y autoevaluación","5%","Reconocimiento de errores y aprendizaje realizado."]
+  ],
+  criterios:[
+    ["Diferencia factor, riesgo y daño y clasifica con coherencia","25%"],
+    ["Explica cuándo aparece cada situación y sus posibles consecuencias","20%"],
+    ["Propone medidas específicas y justificadas","25%"],
+    ["Incorpora evidencias, revisiones y reflexión","20%"],
+    ["Organiza la información y utiliza fuentes identificables","10%"]
+  ],
+  fuentes:[
+    "Ley 31/1995, de Prevención de Riesgos Laborales.",
+    "Reales Decretos de desarrollo: 486/1997 (lugares de trabajo), 485/1997 (señalización), 488/1997 (pantallas), 487/1997 (manipulación manual de cargas), 773/1997 (EPI), 374/2001 (agentes químicos), 664/1997 (agentes biológicos), 286/2006 (ruido) y 1311/2005 (vibraciones).",
+    "Portal del INSST (Instituto Nacional de Seguridad y Salud en el Trabajo). Verifica la vigencia de la normativa en el BOE antes de usarla en el aula."
+  ]
+};
+
+/* Índice de actividades */
+const ACT = {};
+SESIONES.forEach(s => s.actividades.forEach(a => ACT[a.id] = a));
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function envolver(a, clase, cuerpo, acciones = ""){
+  return `<section class="activity ${clase}" data-aid="${a.id}">
+    <div class="print-head"></div>
+    <h3>${a.titulo}</h3>
+    ${a.enunciado ? `<p class="muted">${a.enunciado}</p>` : ""}
+    ${cuerpo}
+    ${acciones ? `<div class="acciones noprint">${acciones}</div>` : ""}
+  </section>`;
+}
+
+const btnPDF = aid => `<button class="btn" data-act="pdf" data-aid="${aid}">Exportar PDF</button>`;
+
+function accionesCorreccion(a, r){
+  return r
+    ? `<span class="resultado">${fmt(r.puntos)}/10</span><button class="btn" data-act="reintentar" data-aid="${a.id}">Volver a intentar</button>`
+    : `<button class="btn primary" data-act="corregir" data-aid="${a.id}">Corregir</button>`;
+}
+
+function quizHTML(a){
+  const r = st.res[a.id];
+  const cuerpo = a.preguntas.map((p, i) => {
+    const d = r ? r.detalle[i] : null;
+    const ops = p.ops.map((o, j) =>
+      `<label><input type="radio" name="${a.id}-${i}" value="${j}"${d && d.sel === j ? " checked" : ""}${r ? " disabled" : ""}> ${o}</label>`).join("");
+    const fb = d ? `<p class="${d.ok ? "ok" : "ko"}">${d.ok ? "Correcta." : "Incorrecta. La respuesta correcta es: " + p.ops[p.a] + "."}</p>` : "";
+    return `<div class="pregunta"><p><strong>${i + 1}. ${p.q}</strong></p>${ops}${fb}</div>`;
+  }).join("");
+  return envolver(a, "quiz", cuerpo, accionesCorreccion(a, r));
+}
+
+function clasificarHTML(a){
+  const r = st.res[a.id];
+  const cuerpo = a.items.map((it, i) => {
+    const d = r ? r.detalle[i] : null;
+    const sel = `<select name="${a.id}-${i}"${r ? " disabled" : ""} aria-label="${esc(it.t)}"><option value="">Elige…</option>${a.opciones.map((o, j) =>
+      `<option value="${j}"${d && d.sel === j ? " selected" : ""}>${o}</option>`).join("")}</select>`;
+    const fb = d ? ` <span class="${d.ok ? "ok" : "ko"}">${d.ok ? "✓" : "✗ " + a.opciones[it.a]}</span>` : "";
+    return `<div class="item"><span>${it.t}</span><span>${sel}${fb}</span></div>`;
+  }).join("");
+  return envolver(a, "clasificar", cuerpo, accionesCorreccion(a, r));
+}
+
+function abiertaHTML(a){
+  const v = st.resp[a.id] || [];
+  const cuerpo = a.preguntas.map((p, i) =>
+    `<label class="campo"><strong>${p}</strong><textarea data-resp="${a.id}" data-i="${i}">${esc(v[i] || "")}</textarea></label>`).join("");
+  return envolver(a, "abierta", cuerpo, btnPDF(a.id));
+}
+
+function checklistHTML(a){
+  const v = st.checks[a.id] || [];
+  const cuerpo = `<ul class="lista-check">${a.items.map((t, i) =>
+    `<li><label><input type="checkbox" data-chk="${a.id}" data-i="${i}"${v[i] ? " checked" : ""}> ${t}</label></li>`).join("")}</ul>`;
+  const cuenta = `<span class="muted" data-count="${a.id}">${v.filter(Boolean).length} de ${a.items.length} marcados</span>`;
+  return envolver(a, "checklist", cuerpo, cuenta + btnPDF(a.id));
+}
+
+function fichaHTML(a){
+  return envolver(a, "ficha", a.html, btnPDF(a.id));
+}
+
+const RENDER = {quiz:quizHTML, clasificar:clasificarHTML, abierta:abiertaHTML, checklist:checklistHTML, ficha:fichaHTML};
+
+function videoHTML(v){
+  if (v.id) {
+    return `<div class="bloque"><h3>${v.titulo}</h3>
+      <iframe class="video" src="https://www.youtube-nocookie.com/embed/${v.id}" title="${esc(v.titulo)}" allowfullscreen loading="lazy"></iframe></div>`;
+  }
+  return `<div class="bloque"><h3>${v.titulo}</h3>
+    <p class="muted">Vídeo pendiente de elegir.</p>
+    <a class="btn" href="https://www.youtube.com/results?search_query=${encodeURIComponent(v.busqueda)}" target="_blank" rel="noopener">Buscar un vídeo recomendado</a></div>`;
+}
+
+function bloqueInforme(clave, titulo){
+  return `<div class="bloque noprint">
+    <h3>${titulo}</h3>
+    <p>Comprueba que tu nombre y el código de grupo aparecen arriba. El informe incluye tus puntuaciones y tus respuestas abiertas.</p>
+    <div class="acciones"><button class="btn primary" data-act="ver" data-clave="${clave}">Generar informe</button></div>
+    <div id="informe-${clave}"></div></div>`;
+}
+
+function sesionHTML(s){
+  const antes = s.antes ? `<div class="bloque"><h3>Antes de clase</h3>${s.antes}</div>` : "";
+  const videos = (s.videos || []).map(videoHTML).join("");
+  const tiempos = s.tiempos ? `<div class="bloque"><h3>Secuencia de la sesión</h3><p>${s.tiempos}</p></div>` : "";
+  const cadena = s.n === 1 ? `<div class="bloque"><h3>La cadena que usaremos en todo el proyecto</h3>
+     <div class="cadena"><span>Situación de trabajo</span><b>→</b><span>Factor de riesgo</span><b>→</b><span>Riesgo</span><b>→</b><span>Posible daño</span><b>→</b><span>Medida preventiva</span></div>
+     <p class="muted">Ejemplo: zona de paso con un cable atravesado → obstáculo → posibilidad de tropiezo y caída → contusión o esguince → retirar el cable.</p></div>` : "";
+  const acts = s.actividades.map(a => RENDER[a.tipo](a)).join("");
+  return `<header class="sesion-head"><div class="fecha">${s.fecha}</div><h2>${s.titulo}</h2><p>${s.objetivo}</p></header>
+    ${antes}${videos}${tiempos}${cadena}${acts}${bloqueInforme(s.n, "Enviar mi trabajo de esta sesión")}`;
+}
+
+function evaluacionHTML(){
+  const pond = COTEJO_RUBRICA.ponderacion.map(([a,b,c]) => `<tr><td>${a}</td><td>${b}</td><td>${c}</td></tr>`).join("");
+  const crit = COTEJO_RUBRICA.criterios.map(([a,b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("");
+  const fuentes = COTEJO_RUBRICA.fuentes.map(f => `<li>${f}</li>`).join("");
+  return `<header class="sesion-head"><div class="fecha">Evaluación</div><h2>Portfolio, rúbrica e informe final</h2>
+    <p>La ponderación es una propuesta ajustable a los criterios de tu programación.</p></header>
+    <div class="bloque"><h3>Ponderación orientativa</h3>
+      <table class="ficha"><tr><th>Instrumento</th><th>Peso</th><th>Qué permite comprobar</th></tr>${pond}</table></div>
+    <div class="bloque"><h3>Rúbrica del portfolio</h3>
+      <table class="ficha"><tr><th>Criterio</th><th>Peso</th></tr>${crit}</table>
+      <p class="muted">Niveles: 4 preciso y justificado · 3 adecuado con pequeñas imprecisiones · 2 parcial o genérico · 1 incompleto o con errores importantes.</p>
+      <p>En las medidas preventivas se valorará que no se recurra automáticamente a «usar EPI»: primero la eliminación o reducción del riesgo en su origen, y después la protección colectiva.</p></div>
+    <div class="bloque"><h3>Fuentes</h3><ul>${fuentes}</ul></div>
+    ${bloqueInforme("final", "Informe final de todas las sesiones")}`;
+}
+
+/* =========================================================
+   INFORMES, COPIA, EMAIL
+   ========================================================= */
+function textoInforme(sesiones){
+  let t = `AV1UD3 · Detectives de riesgos\nAlumno/a: ${st.nombre}\nGrupo: ${st.grupo}\nFecha: ${new Date().toLocaleDateString("es-ES")}\n`;
+  sesiones.forEach(s => {
+    const lineas = [];
+    s.actividades.forEach(a => {
+      if (a.tipo === "quiz" || a.tipo === "clasificar") {
+        const r = st.res[a.id];
+        lineas.push(`- ${a.titulo}: ${r ? fmt(r.puntos) + "/10" : "sin corregir"}`);
+      }
+      if (a.tipo === "checklist") {
+        const v = st.checks[a.id] || [];
+        lineas.push(`- ${a.titulo}: ${v.filter(Boolean).length} de ${a.items.length} elementos`);
+      }
+      if (a.tipo === "abierta") {
+        a.preguntas.forEach((p, i) => {
+          const r = (st.resp[a.id] || [])[i];
+          lineas.push(`- ${a.titulo} · ${p}\n  ${r && r.trim() ? r.trim() : "(sin respuesta)"}`);
+        });
+      }
+    });
+    if (lineas.length) t += `\n== Sesión ${s.n}: ${s.titulo} ==\n` + lineas.join("\n") + "\n";
+  });
+  return t;
+}
+
+const generar = clave => textoInforme(clave === "final" ? SESIONES : [SESIONES[+clave - 1]]);
+
+function mostrarInforme(clave){
+  const cont = document.getElementById("informe-" + clave);
+  if (!st.nombre.trim() || !st.grupo.trim()) {
+    cont.innerHTML = `<p class="aviso">Antes de generar el informe, escribe tu nombre y el código de grupo en la parte superior.</p>`;
+    document.getElementById("nombre").focus();
+    return;
+  }
+  cont.innerHTML = `<pre class="informe">${esc(generar(clave))}</pre>
+    <div class="acciones"><button class="btn primary" data-act="copiar" data-clave="${clave}">Copiar para Classroom</button>
+    <button class="btn" data-act="email" data-clave="${clave}">Enviar por email</button></div>
+    <p class="muted">Si el email no muestra todo el texto, usa «Copiar para Classroom» y pégalo en el correo.</p>`;
+}
+
+async function copiar(clave){
+  const texto = generar(clave);
+  try {
+    await navigator.clipboard.writeText(texto);
+    toast("Informe copiado. Pégalo en la tarea de Classroom.");
+  } catch (e) {
+    const pre = document.querySelector(`#informe-${clave} .informe`);
+    if (pre) { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+    toast("Selecciona el texto y cópialo con Ctrl+C.");
+  }
+}
+
+function enviarEmail(clave){
+  if (!CONFIG.EMAIL_DESTINO) {
+    toast("Falta la dirección de destino: edita CONFIG.EMAIL_DESTINO en el código.");
+    return;
+  }
+  const asunto = `AV1UD3 · ${st.nombre} · ${st.grupo}`;
+  location.href = `mailto:${CONFIG.EMAIL_DESTINO}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(generar(clave))}`;
+}
+
+/* =========================================================
+   CORRECCIÓN
+   ========================================================= */
+function corregir(aid){
+  const a = ACT[aid];
+  const detalle = [];
+  let aciertos = 0;
+  if (a.tipo === "quiz") {
+    a.preguntas.forEach((p, i) => {
+      const c = document.querySelector(`input[name="${aid}-${i}"]:checked`);
+      const sel = c ? +c.value : null;
+      const ok = sel === p.a;
+      if (ok) aciertos++;
+      detalle.push({sel, ok});
+    });
+  } else {
+    a.items.forEach((it, i) => {
+      const s = document.querySelector(`select[name="${aid}-${i}"]`);
+      const sel = s && s.value !== "" ? +s.value : null;
+      const ok = sel === it.a;
+      if (ok) aciertos++;
+      detalle.push({sel, ok});
+    });
+  }
+  if (detalle.some(d => d.sel === null)) {
+    toast("Responde todas antes de corregir.");
+    return;
+  }
+  st.res[aid] = {tipo: a.tipo, puntos: Math.round(aciertos / detalle.length * 100) / 10, detalle};
+  guardar();
+  pintar();
+}
+
+/* =========================================================
+   IMPRESIÓN / PDF
+   ========================================================= */
+function exportarPDF(aid){
+  const sec = document.querySelector(`.activity[data-aid="${aid}"]`);
+  if (!sec) return;
+  sec.querySelectorAll("textarea").forEach(t => {
+    const d = document.createElement("div");
+    d.className = "print-copy";
+    d.textContent = t.value || "(sin respuesta)";
+    t.after(d);
+  });
+  sec.querySelectorAll("li label input[data-chk]").forEach(() => {});
+  const fecha = new Date().toLocaleDateString("es-ES");
+  sec.querySelector(".print-head").innerHTML =
+    `<strong>AV1UD3 · Detectives de riesgos</strong> — Alumno/a: ${esc(st.nombre || "—")} · Grupo: ${esc(st.grupo || "—")} · ${fecha}`;
+  sec.classList.add("is-printing");
+  document.body.dataset.print = "1";
+  window.print();
+}
+
+window.addEventListener("afterprint", () => {
+  delete document.body.dataset.print;
+  document.querySelectorAll(".is-printing").forEach(e => e.classList.remove("is-printing"));
+  document.querySelectorAll(".print-copy").forEach(e => e.remove());
+});
+
+/* =========================================================
+   NAVEGACIÓN Y EVENTOS
+   ========================================================= */
+const VISTAS = [...SESIONES.map(s => "s" + s.n), "evaluacion"];
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("on"), 3200);
+}
+
+function pintarNav(){
+  const items = SESIONES.map(s =>
+    `<a href="#s${s.n}"${vista === "s" + s.n ? ' aria-current="page"' : ""}><span class="n">${String(s.n).padStart(2, "0")}</span>${s.corto}<small>${s.fecha}</small></a>`).join("");
+  document.getElementById("nav").innerHTML = items +
+    `<a href="#evaluacion"${vista === "evaluacion" ? ' aria-current="page"' : ""}><span class="n">—</span>Evaluación e informe<small>Rúbrica y envío final</small></a>`;
+}
+
+function pintar(){
+  pintarNav();
+  document.getElementById("main").innerHTML = vista === "evaluacion"
+    ? evaluacionHTML()
+    : sesionHTML(SESIONES[+vista.slice(1) - 1]);
+}
+
+function ir(){
+  const h = location.hash.slice(1) || "s1";
+  vista = VISTAS.includes(h) ? h : "s1";
+  pintar();
+  window.scrollTo({top: 0});
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const act = b.dataset.act, aid = b.dataset.aid, clave = b.dataset.clave;
+  if (act === "corregir") corregir(aid);
+  if (act === "reintentar") { delete st.res[aid]; guardar(); pintar(); }
+  if (act === "pdf") exportarPDF(aid);
+  if (act === "ver") mostrarInforme(clave);
+  if (act === "copiar") copiar(clave);
+  if (act === "email") enviarEmail(clave);
+});
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.matches("textarea[data-resp]")) {
+    const id = t.dataset.resp, i = +t.dataset.i;
+    st.resp[id] = st.resp[id] || [];
+    st.resp[id][i] = t.value;
+    guardar();
+  }
+  if (t.matches("[data-id-campo]")) {
+    st[t.dataset.idCampo] = t.value;
+    guardar();
+  }
+});
+
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.matches("[data-chk]")) {
+    const id = t.dataset.chk, i = +t.dataset.i;
+    st.checks[id] = st.checks[id] || [];
+    st.checks[id][i] = t.checked;
+    guardar();
+    const c = document.querySelector(`[data-count="${id}"]`);
+    if (c) c.textContent = `${st.checks[id].filter(Boolean).length} de ${ACT[id].items.length} marcados`;
+  }
+});
+
+// Rellenar identificación guardada
+document.getElementById("nombre").value = st.nombre || "";
+document.getElementById("grupo").value = st.grupo || "";
+
+/* =========================================================
+   COPIA DE SEGURIDAD: exportar e importar el progreso
+   ========================================================= */
+function exportarCopia(){
+  const datos = {
+    app: "AV1UD3-detectives-de-riesgos",
+    version: 1,
+    exportado: new Date().toISOString(),
+    progreso: st
+  };
+  const blob = new Blob([JSON.stringify(datos, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const nombreArchivo = `AV1UD3_${(st.grupo || "sin-grupo").replace(/[^\w-]+/g, "_")}_${(st.nombre || "alumno").trim().replace(/\s+/g, "_").replace(/[^\w-]+/g, "")}.json`;
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast("Copia exportada. Guarda el archivo en un lugar seguro.");
+}
+
+function importarCopia(archivo){
+  const lector = new FileReader();
+  lector.onload = () => {
+    let datos;
+    try {
+      datos = JSON.parse(lector.result);
+    } catch (e) {
+      toast("El archivo no es válido: no se puede leer como copia.");
+      return;
+    }
+    if (!datos || datos.app !== "AV1UD3-detectives-de-riesgos" || !datos.progreso) {
+      toast("Este archivo no corresponde a esta web.");
+      return;
+    }
+    const hayDatos = Object.keys(st.res).length || Object.keys(st.resp).length || Object.keys(st.checks).length;
+    if (hayDatos && !confirm("Se reemplazará el progreso guardado en este navegador por el de la copia. ¿Continuar?")) {
+      return;
+    }
+    const p = datos.progreso;
+    st = Object.assign({nombre:"", grupo:"", res:{}, resp:{}, checks:{}}, p);
+    guardar();
+    document.getElementById("nombre").value = st.nombre || "";
+    document.getElementById("grupo").value = st.grupo || "";
+    pintar();
+    toast("Copia importada correctamente.");
+  };
+  lector.onerror = () => toast("No se pudo leer el archivo.");
+  lector.readAsText(archivo);
+}
+
+document.getElementById("btn-exportar").addEventListener("click", exportarCopia);
+document.getElementById("btn-importar").addEventListener("click", () =>
+  document.getElementById("archivo-importar").click());
+document.getElementById("archivo-importar").addEventListener("change", e => {
+  const archivo = e.target.files[0];
+  if (archivo) importarCopia(archivo);
+  e.target.value = "";
+});
+
+window.addEventListener("hashchange", ir);
+ir();
+</script>
+</body>
+</html>
